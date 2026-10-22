@@ -27,7 +27,7 @@
     <!-- Header -->
     <header class="mb-6">
       <div class="flex items-center justify-between">
-        <div>
+        <div align="center" class="flex-1">
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Habit Tracker</h1>
         </div>
       </div>
@@ -70,18 +70,18 @@
     <div class="bg-slate-50 rounded-xl p-3.5 mb-4 border border-slate-100">
       <div class="flex items-center justify-between text-xs font-medium text-slate-600 mb-2">
         <span id="habit-count">3 habits total</span>
-        <span id="progress-percent" class="text-emerald-700 font-semibold">33% completed</span>
+        <span id="progress-percent" class="text-emerald-700 font-semibold"> 0% completed</span>
       </div>
       <!-- Progress Bar Track -->
       <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
         <div
           id="progress-bar"
           class="bg-emerald-600 h-2.5 rounded-full transition-all duration-300 ease-out"
-          style="width: 33%"
+          style="width: 0%"
         ></div>
       </div>
       <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500">
-        <span id="completed-count">1 of 3 habits done today</span>
+        <span id="completed-count">0 of 3 habits done today</span>
         <button
           type="button"
           id="open-reset-btn"
@@ -199,8 +199,8 @@
         console.warn('localStorage is not available:', e);
       }
       return [
-        { id: 1, text: 'Drink 2 liters of water', completed: true, streak: 3, category: 'Health' },
-        { id: 2, text: 'Read for 15 minutes', completed: false, streak: 1, category: 'Focus' },
+        { id: 1, text: 'Drink 2 liters of water', completed: false, streak: 0, category: 'Health' },
+        { id: 2, text: 'Read for 15 minutes', completed: false, streak: 0, category: 'Focus' },
         { id: 3, text: 'Take a 20-minute walk', completed: false, streak: 0, category: 'Health' }
       ];
     }
