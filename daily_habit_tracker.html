@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Habit Tracker</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen p-4 sm:p-6 md:p-10 flex flex-col items-center">
+  <main class="w-full max-w-lg bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 relative">
+    <!-- Header -->
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Habit Tracker</h1>
+          <p class="text-sm text-slate-500 mt-1">Version 6: Complete habit tracker with daily reset</p>
+        </div>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          Step 6: Daily Reset
+        </span>
+      </div>
+    </header>
+
+    <!-- Habit Input Form -->
+    <form id="habit-form" class="space-y-3 mb-6">
+      <div class="flex gap-2">
+        <input
+          type="text"
+          id="habit-input"
+          placeholder="Enter a new habit (e.g., Read 15 mins)..."
+          class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+          autocomplete="off"
+        >
+        <button
+          type="submit"
+          id="add-btn"
+          class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-medium text-sm rounded-xl transition-colors shrink-0 shadow-sm"
+        >
+          Add Habit
+        </button>
+      </div>
+      <!-- Category Selector -->
+      <div class="flex items-center gap-2 text-xs text-slate-600">
+        <label for="category-select" class="font-medium shrink-0">Category:</label>
+        <select
+          id="category-select"
+          class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        >
+          <option value="Health">Health</option>
+          <option value="Focus">Focus</option>
+          <option value="Mindset">Mindset</option>
+          <option value="Personal">Personal</option>
+        </select>
+      </div>
+    </form>
+
+    <!-- Progress Card -->
+    <div class="bg-slate-50 rounded-xl p-3.5 mb-4 border border-slate-100">
+      <div class="flex items-center justify-between text-xs font-medium text-slate-600 mb-2">
+        <span id="habit-count">3 habits total</span>
+        <span id="progress-percent" class="text-emerald-700 font-semibold">33% completed</span>
+      </div>
+      <!-- Progress Bar Track -->
+      <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+        <div
+          id="progress-bar"
+          class="bg-emerald-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+          style="width: 33%"
+        ></div>
+      </div>
+      <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+        <span id="completed-count">1 of 3 habits done today</span>
+        <button
+          type="button"
+          id="open-reset-btn"
+          class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline inline-flex items-center gap-1"
+        >
+          <span>🌅</span> Start New Day
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast Banner -->
+    <div id="toast" class="hidden mb-4 p-3 bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs rounded-xl flex items-center justify-between transition-all">
+      <span id="toast-message">New day started! Check off today's habits.</span>
+      <button type="button" id="close-toast-btn" class="text-indigo-500 hover:text-indigo-800 font-bold ml-2 text-sm">&times;</button>
+    </div>
+
+    <!-- Celebration Banner (shown when 100% complete) -->
+    <div id="celebration-banner" class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+      <span class="text-2xl" aria-hidden="true">🎉</span>
+      <div>
+        <h2 class="text-xs font-bold text-emerald-900 uppercase tracking-wide">All Habits Done!</h2>
+        <p class="text-xs text-emerald-700">Terrific job completing all of today's goals and building momentum.</p>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl mb-4 text-xs font-medium" role="tablist" aria-label="Habit filters">
+      <button
+        type="button"
+        id="filter-all"
+        class="flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all bg-white text-slate-800 shadow-xs"
+        role="tab"
+        aria-selected="true"
+      >
+        All (<span id="count-filter-all">3</span>)
+      </button>
+      <button
+        type="button"
+        id="filter-active"
+        class="flex-1 py-1.5 px-3 rounded-lg text-slate-600 hover:text-slate-900 transition-all"
+        role="tab"
+        aria-selected="false"
+      >
+        Active (<span id="count-filter-active">2</span>)
+      </button>
+      <button
+        type="button"
+        id="filter-completed"
+        class="flex-1 py-1.5 px-3 rounded-lg text-slate-600 hover:text-slate-900 transition-all"
+        role="tab"
+        aria-selected="false"
+      >
+        Done (<span id="count-filter-completed">1</span>)
+      </button>
+    </div>
+
+    <!-- Habit List -->
+    <ul id="habit-list" class="space-y-2.5" aria-label="Habits list">
+      <!-- Items dynamically populated via JavaScript -->
+    </ul>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-8">
+      <p id="empty-state-text" class="text-slate-400 text-sm">No habits yet. Add your first habit above!</p>
+    </div>
+
+    <!-- In-Page Confirmation Modal for New Day -->
+    <div id="reset-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-2xl" aria-hidden="true">🌅</span>
+          <h3 class="text-base font-bold text-slate-900">Start a New Day?</h3>
+        </div>
+        <p class="text-xs text-slate-600 mb-5 leading-relaxed">
+          This will uncheck all habits so you can log today's progress. Completed habits keep their current streaks, while uncompleted habits reset their streak to 0.
+        </p>
+        <div class="flex justify-end gap-2.5">
+          <button
+            type="button"
+            id="cancel-reset-btn"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirm-reset-btn"
+            class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm"
+          >
+            Confirm New Day
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'habit_tracker_items';
+
+    // Helper to safely load habits from localStorage
+    function loadHabits() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            return parsed.map(h => ({
+              ...h,
+              category: h.category || 'Health',
+              streak: typeof h.streak === 'number' ? h.streak : (h.completed ? 1 : 0)
+            }));
+          }
+        }
+      } catch (e) {
+        console.warn('localStorage is not available:', e);
+      }
+      return [
+        { id: 1, text: 'Drink 2 liters of water', completed: true, streak: 3, category: 'Health' },
+        { id: 2, text: 'Read for 15 minutes', completed: false, streak: 1, category: 'Focus' },
+        { id: 3, text: 'Take a 20-minute walk', completed: false, streak: 0, category: 'Health' }
+      ];
+    }
+
+    // Helper to safely save habits to localStorage
+    function saveHabits() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+      } catch (e) {
+        console.warn('Unable to save to localStorage:', e);
+      }
+    }
+
+    // Helper to get category style classes
+    function getCategoryBadgeClasses(category) {
+      switch (category) {
+        case 'Health':
+          return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        case 'Focus':
+          return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+        case 'Mindset':
+          return 'bg-sky-50 text-sky-700 border-sky-200';
+        case 'Personal':
+          return 'bg-purple-50 text-purple-700 border-purple-200';
+        default:
+          return 'bg-slate-100 text-slate-600 border-slate-200';
+      }
+    }
+
+    // State variables
+    let habits = loadHabits();
+    let currentFilter = 'all'; // 'all', 'active', 'completed'
+
+    const habitForm = document.getElementById('habit-form');
+    const habitInput = document.getElementById('habit-input');
+    const categorySelect = document.getElementById('category-select');
+    const habitList = document.getElementById('habit-list');
+    const emptyState = document.getElementById('empty-state');
+    const emptyStateText = document.getElementById('empty-state-text');
+    const habitCount = document.getElementById('habit-count');
+    const completedCount = document.getElementById('completed-count');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressBar = document.getElementById('progress-bar');
+    const celebrationBanner = document.getElementById('celebration-banner');
+
+    const filterAllBtn = document.getElementById('filter-all');
+    const filterActiveBtn = document.getElementById('filter-active');
+    const filterCompletedBtn = document.getElementById('filter-completed');
+    const countFilterAll = document.getElementById('count-filter-all');
+    const countFilterActive = document.getElementById('count-filter-active');
+    const countFilterCompleted = document.getElementById('count-filter-completed');
+
+    const openResetBtn = document.getElementById('open-reset-btn');
+    const resetModal = document.getElementById('reset-modal');
+    const cancelResetBtn = document.getElementById('cancel-reset-btn');
+    const confirmResetBtn = document.getElementById('confirm-reset-btn');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    const closeToastBtn = document.getElementById('close-toast-btn');
+
+    // Show toast notification
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+
+    closeToastBtn.addEventListener('click', () => {
+      toast.classList.add('hidden');
+    });
+
+    // Update filter tab styling
+    function updateFilterButtons() {
+      const tabs = [
+        { btn: filterAllBtn, key: 'all' },
+        { btn: filterActiveBtn, key: 'active' },
+        { btn: filterCompletedBtn, key: 'completed' }
+      ];
+
+      tabs.forEach(({ btn, key }) => {
+        const isActive = currentFilter === key;
+        btn.setAttribute('aria-selected', isActive);
+        if (isActive) {
+          btn.className = 'flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all bg-white text-slate-800 shadow-xs';
+        } else {
+          btn.className = 'flex-1 py-1.5 px-3 rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+        }
+      });
+    }
+
+    // Function to render the habit list and progress
+    function renderHabits() {
+      habitList.innerHTML = '';
+
+      const total = habits.length;
+      const completed = habits.filter(h => h.completed).length;
+      const active = total - completed;
+      const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      // Update counters
+      habitCount.textContent = `${total} ${total === 1 ? 'habit' : 'habits'} total`;
+      completedCount.textContent = `${completed} of ${total} ${total === 1 ? 'habit' : 'habits'} done today`;
+      progressPercent.textContent = `${percent}% completed`;
+      progressBar.style.width = `${percent}%`;
+
+      // Update tab badges
+      countFilterAll.textContent = total;
+      countFilterActive.textContent = active;
+      countFilterCompleted.textContent = completed;
+
+      // Show celebration banner if all done and there's at least 1 habit
+      if (total > 0 && completed === total) {
+        celebrationBanner.classList.remove('hidden');
+      } else {
+        celebrationBanner.classList.add('hidden');
+      }
+
+      // Filter habits based on selected tab
+      const filteredHabits = habits.filter(h => {
+        if (currentFilter === 'active') return !h.completed;
+        if (currentFilter === 'completed') return h.completed;
+        return true;
+      });
+
+      // Handle empty states
+      if (filteredHabits.length === 0) {
+        emptyState.classList.remove('hidden');
+        if (total === 0) {
+          emptyStateText.textContent = 'No habits yet. Add your first habit above!';
+        } else if (currentFilter === 'active') {
+          emptyStateText.textContent = 'No active habits left. All tasks are completed!';
+        } else if (currentFilter === 'completed') {
+          emptyStateText.textContent = 'No completed habits yet today.';
+        }
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      // Render filtered habits
+      filteredHabits.forEach(habit => {
+        const li = document.createElement('li');
+        li.className = `flex items-center justify-between p-3.5 rounded-xl border transition-all ${
+          habit.completed
+            ? 'bg-slate-50 border-slate-200'
+            : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
+        }`;
+
+        // Left section: Checkbox, habit label, category tag, and streak badge
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'flex items-center gap-3 flex-1 min-w-0 mr-2';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = habit.completed;
+        checkbox.id = `habit-${habit.id}`;
+        checkbox.className = 'w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer';
+        checkbox.addEventListener('change', () => toggleHabit(habit.id));
+
+        const textWrapper = document.createElement('div');
+        textWrapper.className = 'flex items-center gap-2 min-w-0 flex-wrap';
+
+        const label = document.createElement('label');
+        label.htmlFor = `habit-${habit.id}`;
+        label.className = `text-sm cursor-pointer select-none truncate transition-colors ${
+          habit.completed ? 'line-through text-slate-400' : 'text-slate-800 font-medium'
+        }`;
+        label.textContent = habit.text;
+
+        // Category Tag
+        const categoryBadge = document.createElement('span');
+        const badgeClasses = getCategoryBadgeClasses(habit.category);
+        categoryBadge.className = `inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badgeClasses}`;
+        categoryBadge.textContent = habit.category || 'Health';
+
+        // Streak badge
+        const streakBadge = document.createElement('span');
+        streakBadge.className = `inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+          habit.streak > 0
+            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+            : 'bg-slate-100 text-slate-500'
+        }`;
+        streakBadge.innerHTML = `<span aria-hidden="true">🔥</span> ${habit.streak} ${habit.streak === 1 ? 'day' : 'days'}`;
+        streakBadge.title = `${habit.streak}-day streak`;
+
+        textWrapper.appendChild(label);
+        textWrapper.appendChild(categoryBadge);
+        textWrapper.appendChild(streakBadge);
+
+        leftDiv.appendChild(checkbox);
+        leftDiv.appendChild(textWrapper);
+
+        // Right section: Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-colors text-sm font-semibold';
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.title = 'Delete habit';
+        deleteBtn.setAttribute('aria-label', `Delete ${habit.text}`);
+        deleteBtn.addEventListener('click', () => deleteHabit(habit.id));
+
+        li.appendChild(leftDiv);
+        li.appendChild(deleteBtn);
+        habitList.appendChild(li);
+      });
+    }
+
+    // Toggle habit completion and update streak
+    function toggleHabit(id) {
+      habits = habits.map(h => {
+        if (h.id === id) {
+          const isNowCompleted = !h.completed;
+          const currentStreak = h.streak || 0;
+          const newStreak = isNowCompleted
+            ? currentStreak + 1
+            : Math.max(0, currentStreak - 1);
+
+          return {
+            ...h,
+            completed: isNowCompleted,
+            streak: newStreak
+          };
+        }
+        return h;
+      });
+      saveHabits();
+      renderHabits();
+    }
+
+    // Delete a habit
+    function deleteHabit(id) {
+      habits = habits.filter(h => h.id !== id);
+      saveHabits();
+      renderHabits();
+    }
+
+    // Add a new habit
+    habitForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = habitInput.value.trim();
+      if (!text) return;
+
+      const category = categorySelect.value || 'Health';
+
+      const newHabit = {
+        id: Date.now(),
+        text: text,
+        completed: false,
+        streak: 0,
+        category: category
+      };
+
+      habits.push(newHabit);
+      saveHabits();
+      habitInput.value = '';
+      renderHabits();
+    });
+
+    // Start New Day logic
+    openResetBtn.addEventListener('click', () => {
+      resetModal.classList.remove('hidden');
+    });
+
+    cancelResetBtn.addEventListener('click', () => {
+      resetModal.classList.add('hidden');
+    });
+
+    confirmResetBtn.addEventListener('click', () => {
+      habits = habits.map(h => {
+        return {
+          ...h,
+          completed: false,
+          streak: h.completed ? h.streak : 0 // uncompleted habits break streak
+        };
+      });
+      saveHabits();
+      resetModal.classList.add('hidden');
+      renderHabits();
+      showToast('🌅 New day started! Check off today\'s habits.');
+    });
+
+    // Tab event listeners
+    filterAllBtn.addEventListener('click', () => {
+      currentFilter = 'all';
+      updateFilterButtons();
+      renderHabits();
+    });
+
+    filterActiveBtn.addEventListener('click', () => {
+      currentFilter = 'active';
+      updateFilterButtons();
+      renderHabits();
+    });
+
+    filterCompletedBtn.addEventListener('click', () => {
+      currentFilter = 'completed';
+      updateFilterButtons();
+      renderHabits();
+    });
+
+    // Initial render
+    updateFilterButtons();
+    renderHabits();
+  </script>
+</body>
+</html>
